@@ -1,6 +1,7 @@
 package it.polito.tdp.extflightdelays.db;
 
 import java.sql.Connection;
+
 import java.sql.SQLException;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -8,7 +9,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class ConnectDB {
 
-	private static final String jdbcURL = "jdbc:mysql://localhost/extflightdelays";
+	private static final String jdbcURL = "jdbc:mysql://localhost/extflightdelays?user=root&password=paperdollari";
 	private static HikariDataSource ds;
 	
 	public static Connection getConnection() {
@@ -17,7 +18,7 @@ public class ConnectDB {
 			HikariConfig config = new HikariConfig();
 			config.setJdbcUrl(jdbcURL);
 			config.setUsername("root");
-			config.setPassword("rootroot");
+			config.setPassword("paperdollari");
 			
 			// configurazione MySQL
 			config.addDataSourceProperty("cachePrepStmts", "true");

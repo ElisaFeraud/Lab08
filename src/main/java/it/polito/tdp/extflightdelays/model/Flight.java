@@ -16,6 +16,10 @@ public class Flight {
 	private int distance;
 	private LocalDateTime arrivalDate;
 	private Double arrivalDelay;
+	private Airport a_partenza;
+	private Airport a_arrivo;
+	private Airport a_p;
+	private Airport a_a;
 
 	public Flight(int id, int airlineId, int flightNumber, String tailNumber, int originAirportId,
 			int destinationAirportId, LocalDateTime scheduledDepartureDate, Double departureDelay, Double elapsedTime,
@@ -33,7 +37,26 @@ public class Flight {
 		this.arrivalDate = arrivalDate;
 		this.arrivalDelay = arrivalDelay;
 	}
-
+ public Flight(int id, int flightNumber  ,Airport a_p, Airport a_a) {
+	 this.id=id;
+	 this.a_p=a_p; 
+	 this.a_a=a_a;
+	 this.destinationAirportId=a_a.getId();
+	 this.originAirportId= a_p.getId();
+	 this.flightNumber=flightNumber;
+ }
+	public Airport getA_partenza() {
+	return a_p;
+}
+public void setA_partenza(Airport a_partenza) {
+	this.a_partenza = a_partenza;
+}
+public Airport getA_arrivo() {
+	return a_a;
+}
+public void setA_arrivo(Airport a_arrivo) {
+	this.a_arrivo = a_arrivo;
+}
 	public int getId() {
 		return id;
 	}

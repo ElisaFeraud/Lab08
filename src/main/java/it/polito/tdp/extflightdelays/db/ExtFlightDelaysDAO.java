@@ -7,10 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Flight;
+import it.polito.tdp.extflightdelays.model.Rotta;
 
 public class ExtFlightDelaysDAO {
 
@@ -37,24 +39,25 @@ public class ExtFlightDelaysDAO {
 		}
 	}
 
-	public List<Airport> loadAllAirports() {
+	public void loadAllAirports(Map<Integer,Airport> idMap) {
 		String sql = "SELECT * FROM airports";
-		List<Airport> result = new ArrayList<Airport>();
-
+		
 		try {
 			Connection conn = ConnectDB.getConnection();
 			PreparedStatement st = conn.prepareStatement(sql);
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
+				if(!idMap.containsKey(rs.getInt("ID"))) {
 				Airport airport = new Airport(rs.getInt("ID"), rs.getString("IATA_CODE"), rs.getString("AIRPORT"),
 						rs.getString("CITY"), rs.getString("STATE"), rs.getString("COUNTRY"), rs.getDouble("LATITUDE"),
 						rs.getDouble("LONGITUDE"), rs.getDouble("TIMEZONE_OFFSET"));
-				result.add(airport);
+				idMap.put(airport.getId(),airport);
+				}
 			}
 
 			conn.close();
-			return result;
+			
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -81,7 +84,7 @@ public class ExtFlightDelaysDAO {
 						rs.getTimestamp("ARRIVAL_DATE").toLocalDateTime(), rs.getDouble("ARRIVAL_DELAY"));
 				result.add(flight);
 			}
-
+            st.close();
 			conn.close();
 			return result;
 
@@ -90,5 +93,84 @@ public class ExtFlightDelaysDAO {
 			System.out.println("Errore connessione al database");
 			throw new RuntimeException("Error Connection Database");
 		}
+	}
+	public List<Flight> getAllVoli(List<Airport> airport,int x){
+		String sql ="SELECT * "
+				+ "FROM flights "
+				+ "WHERE DISTANCE>? ";//ORIGIN_AIRPORT_ID>DESTINATION_AIRPORT_ID ";
+		List<Flight> result = new LinkedList<Flight>();
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1,x);
+			ResultSet rs = st.executeQuery();
+           
+			while (rs.next()) {
+				
+				int id_aereoporto_partenza= rs.getInt("ORIGIN_AIRPORT_ID");
+				Airport aereoporto_p = null;
+				for(Airport a: airport) {
+					if(a.getId()==id_aereoporto_partenza)
+						aereoporto_p = a;
+					}
+				int id_aereoporto_arrivo=rs.getInt("DESTINATION_AIRPORT_ID");
+				Airport aereoporto_a = null;
+				for(Airport a: airport) {
+					if(a.getId()==id_aereoporto_arrivo)
+						aereoporto_a = a;
+					}
+				Flight f = new Flight(rs.getInt("ID"), rs.getInt("FLIGHT_NUMBER"), aereoporto_p,aereoporto_a);
+						
+				result.add(f);
+				
+				   
+			}
+			st.close();
+			conn.close();
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+
+		return result;
+	}
+	public List<Rotta> getArchi(Map<Integer,Airport> idMap, int x){
+		String sql="SELECT f.ORIGIN_AIRPORT_ID AS id_a1, f.DESTINATION_AIRPORT_ID AS id_a2, AVG(f.DISTANCE) AS n "
+				+ "FROM flights AS f "
+				+ "GROUP BY f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID ";
+		List<Rotta> result = new LinkedList<Rotta>();
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			
+			ResultSet rs = st.executeQuery();
+           
+			while (rs.next()) {
+				Airport origine = idMap.get(rs.getInt("id_a1"));
+				Airport destinazione = idMap.get(rs.getInt("id_a2"));
+				if(origine!=null && destinazione!=null) {
+					if(rs.getInt("n")>x)
+					result.add(new Rotta(origine,destinazione,rs.getInt("n")));
+				}
+				else
+					System.out.println("Errore in getRotte");
+				   
+			}
+			rs.close();
+			st.close();
+			conn.close();
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+
+		
+		return result;
 	}
 }

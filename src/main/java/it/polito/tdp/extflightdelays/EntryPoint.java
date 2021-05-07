@@ -1,6 +1,7 @@
 package it.polito.tdp.extflightdelays;
 
 import javafx.application.Application;
+
 import static javafx.application.Application.launch;
 
 import it.polito.tdp.extflightdelays.model.Model;
@@ -14,12 +15,13 @@ public class EntryPoint extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-    	FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-    	Parent root = loader.load();
+    	FXMLLoader loader = new FXMLLoader((getClass().getResource("/fxml/Scene.fxml")));
+       	Parent root = loader.load();
+           FXMLController controller = loader.getController();
+       	Model model = new Model();
+       	controller.setModel(model);
         Scene scene = new Scene(root);
-         
-        Model model = new Model();
-        FXMLController controller = loader.getController();
+        controller = loader.getController();
         controller.setModel(model);
         
         stage.setTitle("Lab08");
